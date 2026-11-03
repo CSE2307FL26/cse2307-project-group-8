@@ -26,4 +26,5 @@ public class BankAccountTest {
             //do nothing, test passes
         }
     }
+
 }
