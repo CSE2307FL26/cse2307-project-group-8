@@ -19,4 +19,20 @@ public class BankAccount {
     public double getBalance() {
         return this.balance;
     }
+
+    public double withdraw(double withdrawValue){
+    if (withdrawValue <= 0 || withdrawValue > this.balance) {
+        throw new IllegalArgumentException("Invalid withdrawal amount");
+    }
+    this.balance -= withdrawValue;
+    return this.balance;
+    }
+
+    public double checkBalanceOnAnyAccount(BankAccount account){
+    if (account == null) {
+        throw new IllegalArgumentException("Account cannot be null");
+    }
+    return account.getBalance();
+    }
+
 }
