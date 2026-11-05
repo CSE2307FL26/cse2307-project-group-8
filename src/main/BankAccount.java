@@ -27,4 +27,12 @@ public class BankAccount {
     this.balance -= withdrawValue;
     return this.balance;
     }
+
+    public double checkBalanceOnAnyAccount(BankAccount account){
+    if (account == null) {
+        throw new IllegalArgumentException("Account cannot be null");
+    }
+    return account.getBalance();
+    }
+
 }
