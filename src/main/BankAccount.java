@@ -5,16 +5,13 @@ public class BankAccount {
 
     private double balance;
     private boolean closed;
-
-    public BankAccount() {
-        this.balance = 0;
-        this.closed = false;
     private ArrayList<Double> transactionHistory;
 
     public BankAccount() {
         this.balance = 0;
+        this.closed = false;
         this.transactionHistory = new ArrayList<Double>();
-    }
+    
 
     public void deposit(double amount) {
         if(closed) {
@@ -48,6 +45,7 @@ public class BankAccount {
     public ArrayList<Double> getTransactionHistory() {
         return this.transactionHistory;
     }
+
     public double withdraw(double withdrawValue){
     if (withdrawValue <= 0 || withdrawValue > this.balance) {
         throw new IllegalArgumentException("Invalid withdrawal amount");
