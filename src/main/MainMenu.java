@@ -60,6 +60,7 @@ public class MainMenu {
     public static void main(String[] args) {
         MainMenu bankApp = new MainMenu();
         bankApp.run();
+        
     }
 
 }
