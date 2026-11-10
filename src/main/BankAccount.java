@@ -25,6 +25,15 @@ public class BankAccount {
         }
     }
 
+    public void transferTo(BankAccount destination, double amount) {
+        if(destination == this || amount <= 0) {
+            throw new IllegalArgumentException();
+        }
+        if(amount > this.balance) {
+            throw new IllegalStateException();
+        }
+        this.balance -= amount;
+        destination.balance += amount;
 
     public void close() {
         if(balance != 0) {
@@ -40,6 +49,7 @@ public class BankAccount {
     public double getBalance() {
         return this.balance;
     }
+}
 }
 
     public ArrayList<Double> getTransactionHistory() {
