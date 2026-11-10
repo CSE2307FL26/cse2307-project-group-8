@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import java.util.*;
 
 public class BankAccountTest {
 
@@ -87,5 +88,15 @@ public class BankAccountTest {
         assertThrows(IllegalStateException.class, () -> account.deposit(10));
 
         assertEquals(0, account.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testTransactionHistory() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        testAccount.withdraw(30);
+        testAccount.deposit(40);
+        ArrayList<Double> expectedHistory = new ArrayList<Double>(Arrays.asList(50.0, -30.0, 40.0));
+        assertEquals(testAccount.getTransactionHistory(), expectedHistory);
     }
 }
