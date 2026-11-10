@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 
 import main.BankAccount;
 
-public class checkBalanceOnAnyAccountTests {
+public class CheckBalanceOnAnyAccountTests {
 
     @Test
-    public void testcheckBalanceOnAnyAccountReturnsCorrectBalance() {
+    public void testCheckBalanceOnAnyAccountReturnsCorrectBalance() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(100);
 
@@ -17,14 +17,14 @@ public class checkBalanceOnAnyAccountTests {
     }
 
     @Test
-    public void testcheckBalanceOnAnyAccountNewAccountIsZero() {
+    public void testCheckBalanceOnAnyAccountNewAccountIsZero() {
         BankAccount testAccount = new BankAccount();
 
         assertEquals(0, testAccount.checkBalanceOnAnyAccount(testAccount), 0.001);
     }
 
     @Test
-    public void testcheckBalanceOnAnyAccountAfterWithdrawal() {
+    public void testCheckBalanceOnAnyAccountAfterWithdrawal() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(100);
         testAccount.withdraw(30);
@@ -33,7 +33,7 @@ public class checkBalanceOnAnyAccountTests {
     }
 
     @Test
-    public void testcheckBalanceOnAnyAccountOtherAccount() {
+    public void testCheckBalanceOnAnyAccountOtherAccount() {
         BankAccount first = new BankAccount();
         BankAccount second = new BankAccount();
         second.deposit(250);
@@ -42,7 +42,7 @@ public class checkBalanceOnAnyAccountTests {
     }
 
     @Test
-    public void testcheckBalanceOnAnyAccountNullAccount() {
+    public void testCheckBalanceOnAnyAccountNullAccount() {
         BankAccount testAccount = new BankAccount();
 
         assertThrows(IllegalArgumentException.class, () -> testAccount.checkBalanceOnAnyAccount(null));
