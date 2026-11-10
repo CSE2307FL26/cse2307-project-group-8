@@ -21,16 +21,6 @@ public class BankAccount {
         }
     }
 
-    public void transferTo(BankAccount destination, double amount) {
-        if(destination == this || amount <= 0) {
-            throw new IllegalArgumentException();
-        }
-        if(this.closed || destination.closed || amount > this.balance) {
-            throw new IllegalStateException();
-        }
-        this.balance -= amount;
-        destination.balance += amount;
-    }
 
     public void close() {
         if(balance != 0) {
