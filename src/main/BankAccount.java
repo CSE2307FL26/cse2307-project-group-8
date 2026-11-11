@@ -33,6 +33,8 @@ public class BankAccount {
             throw new IllegalStateException();
         }
         this.balance -= amount;
+        this.transactionHistory.add(-amount);
+        destination.transactionHistory.add(amount);
         destination.balance += amount;
     }
 
@@ -60,6 +62,7 @@ public class BankAccount {
             throw new IllegalArgumentException("Invalid withdrawal amount");
         }
         this.balance -= withdrawValue;
+        this.transactionHistory.add(-withdrawValue);
         return this.balance;
     }
 
