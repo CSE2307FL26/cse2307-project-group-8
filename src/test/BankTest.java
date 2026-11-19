@@ -98,4 +98,15 @@ public class BankTest {
 
         assertThrows(IllegalArgumentException.class, () -> bank.createPassword("sam123", "short"));
     }
+
+    @Test
+    public void testGetAccountByUsername() {
+        Bank testBank = new Bank();
+        BankAccount account = new BankAccount();
+        testBank.addAccount(account);
+        testBank.createUsername("alice", account);
+
+        assertTrue(testBank.getAccount("alice") == account);
+        assertTrue(testBank.getAccount("nobody") == null);
+    }
 }

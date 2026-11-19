@@ -4,32 +4,27 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 3;
-	private static final int MAX_SELECTION = 3;
+    private static final int START_OPTIONS = 3;
+    private static final int ACCOUNT_OPTIONS = 7;
+    private static final double CHECKING_OVERDRAFT_LIMIT = 100;
+    private static final double SAVINGS_INTEREST_RATE = 0.02;
 
     private Bank bank;
     private BankAccount userAccount;
     private Scanner keyboardInput;
 
-    private boolean accountSetUp = false;   
-    private boolean loggedIn = false;
     private boolean running = true;
 
     public MainMenu() {
-        this.userAccount = new BankAccount();
         this.bank = new Bank();
-        this.bank.addAccount(userAccount);   
         this.keyboardInput = new Scanner(System.in);
     }
 
     public void displayStartOptions() {
         System.out.println("\nWelcome to the 237 Bank App!");
-        if (accountSetUp) {
-            System.out.println("1. Log in");
-        } else {
-            System.out.println("1. Create a username and password");
-        }
-        System.out.println("2. Exit the app");
+        System.out.println("1. Log in");
+        System.out.println("2. Create an account");
+        System.out.println("3. Exit the app");
     }
 
     public void displayAccountOptions() {
@@ -37,8 +32,14 @@ public class MainMenu {
         System.out.println("1. Make a deposit");
         System.out.println("2. Make a withdrawal");
         System.out.println("3. Check balance");
-        System.out.println("4. Log out");
-        System.out.println("5. Exit the app");
+        System.out.println("4. View transaction history");
+        if (userAccount instanceof SavingsAccount) {
+            System.out.println("5. Apply interest");
+        } else {
+            System.out.println("5. View overdraft status");
+        }
+        System.out.println("6. Log out");
+        System.out.println("7. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -54,13 +55,12 @@ public class MainMenu {
     public void processStartInput(int selection) {
         switch (selection) {
             case 1:
-                if (accountSetUp) {
-                    performLogin();
-                } else {
-                    performLoginSetup();
-                }
+                performLogin();
                 break;
             case 2:
+                performCreateAccount();
+                break;
+            case 3:
                 running = false;
                 break;
         }
@@ -75,30 +75,55 @@ public class MainMenu {
                 performWithdrawal();
                 break;
             case 3:
-                System.out.println("Your balance is: " + userAccount.getBalance());
+                System.out.printf("Your balance is: %.2f%n", userAccount.getBalance());
                 break;
             case 4:
-                loggedIn = false;
-                System.out.println("Logged out.");
+                displayTransactionHistory();
                 break;
             case 5:
+                if (userAccount instanceof SavingsAccount) {
+                    performApplyInterest();
+                } else {
+                    displayOverdraftStatus();
+                }
+                break;
+            case 6:
+                userAccount = null;
+                System.out.println("Logged out.");
+                break;
+            case 7:
                 running = false;
                 break;
         }
     }
 
-    public void performLoginSetup() {
-        System.out.print("Choose a username: ");
-        String username = keyboardInput.nextLine();
-        try {
-            if (!bank.createUsername(username, userAccount)) {
-                System.out.println("That username is taken, or this account already has one.");
-                return;
-            }
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            System.out.println(e.getMessage());
-            return;
+    public void performCreateAccount() {
+        System.out.println("What type of account would you like?");
+        System.out.println("1. Checking (overdraft up to " + CHECKING_OVERDRAFT_LIMIT + ")");
+        System.out.println("2. Savings (" + (SAVINGS_INTEREST_RATE * 100) + "% interest)");
+        BankAccount account;
+        if (getUserSelection(2) == 1) {
+            account = new CheckingAccount(CHECKING_OVERDRAFT_LIMIT);
+        } else {
+            account = new SavingsAccount(SAVINGS_INTEREST_RATE);
         }
+        bank.addAccount(account);
+
+        String username = null;
+        while (username == null) {
+            System.out.print("Choose a username: ");
+            String input = keyboardInput.nextLine();
+            try {
+                if (bank.createUsername(input, account)) {
+                    username = input;
+                } else {
+                    System.out.println("That username is taken.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
         boolean passwordSet = false;
         while (!passwordSet) {
             System.out.print("Choose a password (at least 8 characters): ");
@@ -110,8 +135,7 @@ public class MainMenu {
                 System.out.println(e.getMessage());
             }
         }
-        accountSetUp = true;
-        System.out.println("Username and password created! You can now log in.");
+        System.out.println("Account created! You can now log in.");
     }
 
     public void performLogin() {
@@ -121,7 +145,7 @@ public class MainMenu {
         String password = keyboardInput.nextLine();
 
         if (bank.login(username, password)) {
-            loggedIn = true;
+            userAccount = bank.getAccount(username);
             System.out.println("Login successful!");
         } else {
             System.out.println("Incorrect username or password.");
@@ -129,14 +153,16 @@ public class MainMenu {
     }
 
     public void performDeposit() {
-        double depositAmount = -1;
-        while (depositAmount < 0) {
-            System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextDouble();
-            keyboardInput.nextLine();
+        System.out.print("How much would you like to deposit: ");
+        double amount = keyboardInput.nextDouble();
+        keyboardInput.nextLine();
+
+        try {
+            userAccount.deposit(amount);
+            System.out.println("Deposit complete.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("Invalid deposit amount.");
         }
-        userAccount.deposit(depositAmount);
-        System.out.println("Deposit complete.");
     }
 
     public void performWithdrawal() {
@@ -146,20 +172,45 @@ public class MainMenu {
 
         try {
             double newBalance = userAccount.withdraw(amount);
-            System.out.println("Withdrawal complete. New balance: " + newBalance);
-        } catch (IllegalArgumentException e) {
+            System.out.printf("Withdrawal complete. New balance: %.2f%n", newBalance);
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public void displayTransactionHistory() {
+        if (userAccount.getTransactionHistory().isEmpty()) {
+            System.out.println("No transactions yet.");
+            return;
+        }
+        for (Transaction transaction : userAccount.getTransactionHistory()) {
+            System.out.println(transaction.getTimestamp() + " " + transaction.getType() + " " + transaction.getSignedAmount(userAccount));
+        }
+    }
+
+    public void performApplyInterest() {
+        SavingsAccount savings = (SavingsAccount) userAccount;
+        double interest = savings.applyInterest();
+        System.out.printf("Applied %.2f in interest. New balance: %.2f%n", interest, savings.getBalance());
+    }
+
+    public void displayOverdraftStatus() {
+        CheckingAccount checking = (CheckingAccount) userAccount;
+        System.out.printf("Overdraft limit: %.2f%n", checking.getOverdraftLimit());
+        System.out.printf("Available to withdraw: %.2f%n", checking.getBalance() + checking.getOverdraftLimit());
+        if (checking.isOverdrawn()) {
+            System.out.println("Your account is currently overdrawn.");
         }
     }
 
     public void run() {
         while (running) {
-            if (loggedIn) {
+            if (userAccount != null) {
                 displayAccountOptions();
-                processAccountInput(getUserSelection(5));
+                processAccountInput(getUserSelection(ACCOUNT_OPTIONS));
             } else {
                 displayStartOptions();
-                processStartInput(getUserSelection(2));
+                processStartInput(getUserSelection(START_OPTIONS));
             }
         }
         System.out.println("Goodbye!");

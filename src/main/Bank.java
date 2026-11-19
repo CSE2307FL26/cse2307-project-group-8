@@ -51,6 +51,10 @@ public class Bank {
         passwords.put(username, password);
     }
 
+    public BankAccount getAccount(String username) {
+        return usernames.get(username);
+    }
+
     public boolean login(String username, String password) {
     return passwords.containsKey(username) && passwords.get(username).equals(password);
     }

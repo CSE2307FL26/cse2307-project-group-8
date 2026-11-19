@@ -3,14 +3,14 @@ import java.util.*;
 
 public class BankAccount {
 
-    private double balance;
+    protected double balance;
     private boolean closed;
-    private ArrayList<Double> transactionHistory;
+    protected ArrayList<Transaction> transactionHistory;
 
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
-        this.transactionHistory = new ArrayList<Double>();
+        this.transactionHistory = new ArrayList<Transaction>();
     }
 
     public void deposit(double amount) {
@@ -19,7 +19,7 @@ public class BankAccount {
         }
         if(amount > 0) {
             this.balance += amount;
-            transactionHistory.add(amount);
+            transactionHistory.add(new Transaction(Transaction.Type.DEPOSIT, amount, null, this));
         } else {
             throw new IllegalArgumentException();
         }
@@ -32,10 +32,11 @@ public class BankAccount {
         if(amount > this.balance) {
             throw new IllegalStateException();
         }
+        Transaction transfer = new Transaction(Transaction.Type.TRANSFER, amount, this, destination);
         this.balance -= amount;
-        this.transactionHistory.add(-amount);
-        destination.transactionHistory.add(amount);
+        this.transactionHistory.add(transfer);
         destination.balance += amount;
+        destination.transactionHistory.add(transfer);
     }
 
     public void close() {
@@ -53,7 +54,7 @@ public class BankAccount {
         return this.balance;
     }
 
-    public ArrayList<Double> getTransactionHistory() {
+    public ArrayList<Transaction> getTransactionHistory() {
         return this.transactionHistory;
     }
 
@@ -62,7 +63,7 @@ public class BankAccount {
             throw new IllegalArgumentException("Invalid withdrawal amount");
         }
         this.balance -= withdrawValue;
-        this.transactionHistory.add(-withdrawValue);
+        this.transactionHistory.add(new Transaction(Transaction.Type.WITHDRAWAL, withdrawValue, this, null));
         return this.balance;
     }
 
