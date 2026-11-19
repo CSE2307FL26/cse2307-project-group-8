@@ -1,9 +1,11 @@
 package test;
 
 import main.BankAccount;
+import main.Transaction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -124,8 +126,7 @@ public class BankAccountTest {
     @Test
     public void testEmptyHistoryOnNewAccount() {
         BankAccount testAccount = new BankAccount();
-        ArrayList<Double> expectedHistory = new ArrayList<Double>();
-        assertEquals(testAccount.getTransactionHistory(), expectedHistory);
+        assertTrue(testAccount.getTransactionHistory().isEmpty());
     }
 
     @Test
@@ -135,8 +136,12 @@ public class BankAccountTest {
         testAccount.withdraw(30);
         testAccount.deposit(40);
         testAccount.withdraw(10);
-        ArrayList<Double> expectedHistory = new ArrayList<Double>(Arrays.asList(50.0, -30.0, 40.0, -10.0));
-        assertEquals(testAccount.getTransactionHistory(), expectedHistory);
+        ArrayList<Transaction> history = testAccount.getTransactionHistory();
+        assertEquals(4, history.size());
+        assertEquals(50, history.get(0).getSignedAmount(testAccount), 0.01);
+        assertEquals(-30, history.get(1).getSignedAmount(testAccount), 0.01);
+        assertEquals(40, history.get(2).getSignedAmount(testAccount), 0.01);
+        assertEquals(-10, history.get(3).getSignedAmount(testAccount), 0.01);
     }
 
     @Test
@@ -146,8 +151,7 @@ public class BankAccountTest {
         assertThrows(IllegalArgumentException.class, () -> testAccount.deposit(-50));
         assertThrows(IllegalArgumentException.class, () -> testAccount.deposit(0));
 
-        ArrayList<Double> expectedHistory = new ArrayList<Double>();
-        assertEquals(testAccount.getTransactionHistory(), expectedHistory);
+        assertTrue(testAccount.getTransactionHistory().isEmpty());
     }
 
     @Test
@@ -157,8 +161,12 @@ public class BankAccountTest {
         account1.deposit(50);
         account1.transferTo(account2, 30);
 
-        assertEquals(new ArrayList<Double>(Arrays.asList(50.0, -30.0)), account1.getTransactionHistory());
-        assertEquals(new ArrayList<Double>(Arrays.asList(30.0)), account2.getTransactionHistory());
+        Transaction transfer = account1.getTransactionHistory().get(1);
+        assertEquals(2, account1.getTransactionHistory().size());
+        assertSame(transfer, account2.getTransactionHistory().get(0));
+        assertEquals(Transaction.Type.TRANSFER, transfer.getType());
+        assertEquals(-30, transfer.getSignedAmount(account1), 0.01);
+        assertEquals(30, transfer.getSignedAmount(account2), 0.01);
     }
 
     @Test
